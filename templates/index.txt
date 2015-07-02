@@ -1,0 +1,2 @@
+info:1:{{ key_info['total']  }}
+{% for key in key_info['keys'] %}{{ key }}{% endfor %}{{ '\r\n' }}
