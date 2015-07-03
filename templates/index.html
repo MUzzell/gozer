@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <title>Search result for '{{ key_info['search_term'] | safe }}'</title>
+        <style type='text/css'>
+            table.keys {
+                border-collapse: collapse;
+            }
+            tr.key {
+                border-bottom: 1px solid grey;
+                text-align: left;
+                vertical-align:top; 
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Search result for '{{ key_info['search_term'] | safe }}'</h1>
+        <table class="keys">
+            <tr>
+                <td>Type</td>
+                <td>Bits/Key ID</td>
+                <td>Date</td>
+                <td>User ID</td>
+                {% if key_info['fingerprint'] %}
+                <td>Fingerprint</td>
+                {% endif %}
+            </tr>
+            {% for key in key_info['keys'] %}
+            <tr class='key'>
+                <td>pub</td>
+                <td>{{ key.pub_key.length}}/<a href="{{ url_for('lookup', op='get', search='0x'+key.pub_key.keyid)}}">{{ key.pub_key.keyid[8:] }}</a></td>
+                <td>{{ key.pub_key.timestamp | datetime }}</td>
+                <td>
+                    <a href="{{ url_for('lookup', op='vindex', search='0x'+key.pub_key.keyid) }}">{{ key.uids[0].uid | escape_nonascii }}</a>
+                    {% for uid in key.uids[1:] %}
+                        <br>
+                        {{ uid.uid | escape_nonascii }}
+                    {% endfor %}
+                </td>
+                {% if key_info['fingerprint'] %}
+                <td>{{ key.pub_key.fpr }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
