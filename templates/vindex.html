@@ -44,6 +44,12 @@
                 <td>uid</td>
                 <td colspan="0">{{ key.uids[0].uid | escape_nonascii }}</td>
             </tr>
+            {% for sig in uid.signatures %}
+            <tr>
+                <td>sig</td>
+                <td>sig{{ sig.
+            </tr>
+            {% endfor %}
             {% endfor %}
         {% endfor %}
         </table>
