@@ -82,7 +82,7 @@ def lookup_index(keym, search, fingerprint, options):
     try:
         keys = keym.search(search)
         if keys is None or len(keys) == 0:
-            return abort(404)
+            return render_template("error_404.html"), 200
         
         if options == 'mr':
             response = make_response(render_template("index.txt", key_info = {'keys' : keys, 'total' : len(keys)}))
@@ -92,7 +92,7 @@ def lookup_index(keym, search, fingerprint, options):
             return render_template("index.html", key_info = { 'keys' : keys, 'total' : len(keys), 'search_term' : search, 'fingerprint' : fingerprint})
 
     except PgpKeyError:
-        return abort(404)
+        return render_template("error_404.html"), 200
 
 #currently not implemented
 def lookup_vindex(keym, search, fingerprint):
