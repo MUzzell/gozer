@@ -31,7 +31,7 @@ class KeyManager():
 
     def search(self, search, get_sigs = False):
         if get_sigs:
-            self.context.set_keylist_mode(pygpgme.GPGME_KEYLIST_MODE_SIG_NOTATIONS | GPGME_KEYLIST_MODE_SIGS)
+            self.context.set_keylist_mode(pygpgme.GPGME_KEYLIST_MODE_SIG_NOTATIONS | pygpgme.GPGME_KEYLIST_MODE_SIGS)
         self.context.op_keylist_start(search, 0 )
         keys = []
         while True:

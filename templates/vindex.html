@@ -6,27 +6,46 @@
                 border-collapse: collapse;
             }
             tr.key {
-                border-bottom: 1px solid grey;
+                border-bottom: 1px solid lightgrey;
                 text-align: left;
                 vertical-align:top; 
+            }
+            tr.invalid {
+                text-decoration: line-through;
+            }
+            tr.br {
+                border-bottom: 2px solid black;
+            }
+            li {
+                list-style-type: none;
             }
         </style>
     </head>
     <body>
+        {% if key_info['search_term'] == '' %}
+        <h1>Verbose search for all keys</h1>
+        {% else %}
         <h1>Verbose search result for '{{ key_info['search_term'] | safe }}'</h1>
-        {% for key in key_info['keys'] %}
-            <h3>Key '{{ key.pub_key.keyid[8:] }}'</h3>
-            <table class="keys">
+        {% endif %}
+        <table class="keys">
             <tr>
-                <td></td>
-                <td>Bits/Key ID</td>
+                <th></th>
+                <th>Bits/Key ID</th>
                 {% if key_info['fingerprint'] %}
-                <td>Fingerprint</td>
+                <th>Fingerprint</th>
                 {% endif %}
-                <td>Creation Date</td>
-                <td>Expiry Date</td>
+                <th>Creation Date</th>
+                <th>Expiry Date</th>
+                <th>Notes</th>
+                <th>Status</th>
             </tr>
+            
+        {% for key in key_info['keys'] %}
+            {% if key.pub_key.invalid or key.pub_key.expired or key.pub_key.revoked %}
+            <tr class='key invalid'>
+            {% else %}
             <tr class='key'>
+            {% endif %}
                 <td>pub</td>
                 <td>{{ key.pub_key.length}}/<a href="{{ url_for('lookup', op='get', search='0x'+key.pub_key.keyid)}}">{{ key.pub_key.keyid[8:] }}</a></td>
                 {% if key_info['fingerprint'] %}
@@ -38,19 +57,73 @@
                 {% else %}
                 <td></td>
                 {% endif %}
+                <td></td>
+                 <td>
+                    <ul>
+                        {% if key.pub_key.expired %}<li>expired</li>{% endif %}
+                        {% if key.pub_key.revoked %}<li>revoked</li>{% endif %}
+                        {% if key.pub_key.invalid %}<li>invalid</li>{% endif %}
+                    </ul>
+                </td>
             </tr>
             {% for uid in key.uids %}
+            {% if uid.invalid or uid.expired or uid.revoked %}
+            <tr class="invalid">
+            {% else %}
             <tr>
+            {% endif %}
                 <td>uid</td>
                 <td colspan="0">{{ key.uids[0].uid | escape_nonascii }}</td>
+                <tr></tr>
+                <tr></tr>
+                <td>
+                    <ul>
+                        {% if uid.expired %}<li>expired</li>{% endif %}
+                        {% if uid.revoked %}<li>revoked</li>{% endif %}
+                        {% if uid.invalid %}<li>invalid</li>{% endif %}
+                    </ul>
+                </td>
             </tr>
             {% for sig in uid.signatures %}
+            {% if sig.invalid or sig.revoked or sig.expired %} 
+            <tr class='invalid'>
+            {% else %}
             <tr>
+            {% endif %}
                 <td>sig</td>
-                <td>sig{{ sig.
+                {% if sig.keyid == key.pub_key.keyid %}
+                <td>{{ sig.keyid[8:] }}: {{ sig.uid | escape_nonascii }}</td>
+                {% else %}
+                <td><a href="{{ url_for('lookup', op='vindex', search='0x'+sig.keyid)}}">{{ sig.keyid[8:] }}: {{ sig.uid | escape_nonascii }}</a></td>
+                {% endif %}
+                {% if key_info['fingerprint'] %}
+                <td></td>
+                {% endif %}
+                <td>{{ sig.timestamp | datetime}}</td>
+                {% if sig.expires != 0 %}
+                <td>{{ sig.expires | datetime }}</td>
+                {% else %}
+                <td></td>
+                {% endif %}
+                <td>
+                    <ul>
+                        {% for note in sig.notations %}
+                        <li>{{ note.name | escape_nonascii }}: {{ note.value | escape_nonascii }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        {% if sig.expired %}<li>expired</li>{% endif %}
+                        {% if sig.revoked %}<li>revoked</li>{% endif %}
+                        {% if sig.invalid %}<li>invalid</li>{% endif %}
+                    </ul>
+                </td>
             </tr>
             {% endfor %}
             {% endfor %}
+
+        <tr class="br"></tr>
         {% endfor %}
         </table>
     </body>

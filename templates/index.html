@@ -10,10 +10,17 @@
                 text-align: left;
                 vertical-align:top; 
             }
+            tr.invalid {
+                text-decoration: line-through;
+            }
         </style>
     </head>
     <body>
+        {% if key_info['search_term'] == '' %}
+        <h1>Search result for all keys</h1>
+        {% else %}
         <h1>Search result for '{{ key_info['search_term'] | safe }}'</h1>
+        {% endif %}
         <table class="keys">
             <tr>
                 <td>Type</td>
@@ -25,7 +32,11 @@
                 {% endif %}
             </tr>
             {% for key in key_info['keys'] %}
+            {% if key.pub_key.invalid or key.pub_key.expired or key.pub_key.revoked %}
+            <tr class='key invalid'>
+            {% else %}
             <tr class='key'>
+            {% endif %}
                 <td>pub</td>
                 <td>{{ key.pub_key.length}}/<a href="{{ url_for('lookup', op='get', search='0x'+key.pub_key.keyid)}}">{{ key.pub_key.keyid[8:] }}</a></td>
                 <td>{{ key.pub_key.timestamp | datetime }}</td>

@@ -74,7 +74,7 @@ def pks_lookup():
     elif op == 'vindex':
         return lookup_vindex(m, search, fingerprint, options)
     elif op == 'get':
-        return lookup_get(m, search)
+        return lookup_get(m, search, options)
     else:
         return abort(500)
                        
@@ -94,14 +94,12 @@ def lookup_index(keym, search, fingerprint, options):
     except PgpKeyError:
         return render_template("error_404.html"), 200
 
-#currently not implemented
-def lookup_vindex(keym, search, fingerprint):
-    abort(500)
-'''
+def lookup_vindex(keym, search, fingerprint, options):
+    #abort(500)
     try:
         keys = keym.search(search, True)
         if keys is None or len(keys) == 0:
-            return abort(404)
+            return render_template("error_404.html"), 200
         if options == 'mr':
             response = make_response(render_template("index.txt", key_info = {'keys' : keys, 'total' : len(keys)}))
             response.headers['Content-Type'] = 'text/plain'
@@ -109,12 +107,16 @@ def lookup_vindex(keym, search, fingerprint):
         else:
             return render_template("vindex.html", key_info = { 'keys' : keys, 'total' : len(keys), 'search_term' : search, 'fingerprint' : fingerprint })
     except PgpKeyError:
-        return abort(404)
-'''
-def lookup_get(keym, search):
+        return render_template("error_404.html"), 200
+
+def lookup_get(keym, search, options = None):
     try:
         key = keym.get(search)
-        response = make_response(render_template("get_key.html", key_info = { 'key' : key, 'key_id' : search }))
+        if options is not None and options == 'mr':
+            response = make_response(key)
+            response.headers['Content-Type'] = 'application/pgp-keys'
+        else:
+            response = make_response(render_template("get_key.html", key_info = { 'key' : key, 'key_id' : search }))
         return response
     except PgpKeyError:
         return abort(404)
