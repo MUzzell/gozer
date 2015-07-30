@@ -1,13 +1,24 @@
-import requests, pdb, re
+import requests, pdb, re, sys
 from keys import KeyManager, PgpKeyError
 
 dom = ['com', 'co', 'gov', 'net', 'org']
 
 id_re = re.compile("^pub:([^:]+)")
 
+
+if len(sys.argv) < 2:
+    sys.stderr.write("keyporter: grab keys from an sks keyserver\nUsage:\n    keyporter.py HOST PORT=11371\n")
+    sys.exit()
+
+host = sys.argv[1]
+port = sys.argv[2] if len(sys.argv) > 2 else '11371'
+
+sys.stderr.write("host: %s\n" % host)
+sys.stderr.write("port: %s\n" % port)
+
 total = 0
 for d in dom:
-    response = requests.get("http://penske.mwri.loc:11371/pks/lookup?search=%s&options=mr&op=index" %d )
+    response = requests.get("http://%s:%s/pks/lookup?search=%s&options=mr&op=index" % (host, port, d) )
     
     if response.status_code != 200:
         continue
@@ -17,7 +28,7 @@ for d in dom:
 
     sub_total = 0
     for key_id in [id_re.match(x).group(1) for x in response.text.split('\n')  if id_re.match(x) is not None]: 
-        cert_response = requests.get("http://penske.mwri.loc:11371/pks/lookup?search=0x%s&op=get" % key_id)
+        cert_response = requests.get("http://%s:%s/pks/lookup?search=0x%s&op=get" % (host, port, key_id))
     
         if cert_response.status_code != 200:
             continue
