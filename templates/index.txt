@@ -2,8 +2,8 @@
 {% for key in key_info['keys'] %}{%
         print 'pub:%s:%d:%d:%s:%s:%s\n' % (
             key.pub_key.keyid[8:],
-            key.pub_key.length,
             key.pub_key.pubkey_algo,
+            key.pub_key.length,
             key.pub_key.timestamp if key.pub_key.timestamp != 0 else '',
             key.pub_key.expired if key.pub_key.expired != 0 else '',
             key.build_flags(key.pub_key))
